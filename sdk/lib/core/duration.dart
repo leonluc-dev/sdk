@@ -106,6 +106,30 @@ class Duration implements Comparable<Duration> {
             microsecondsPerMillisecond * milliseconds +
             microseconds);
 
+  /**
+   * Creates a new Duration object whose value
+   * is the sum of all individual parts, rounded to whole microseconds.
+   *
+   * Individual parts can be larger than the next-bigger unit.
+   * For example, [hours] can be greater than 23.
+   *
+   * All individual parts are allowed to be negative.
+   * All arguments are 0 by default.
+   */
+  Duration.fromDouble(
+      {double days = 0,
+      double hours = 0,
+      double minutes = 0,
+      double seconds = 0,
+      double milliseconds = 0,
+      double microseconds = 0})
+      : this._microseconds((microsecondsPerDay * days +
+            microsecondsPerHour * hours +
+            microsecondsPerMinute * minutes +
+            microsecondsPerSecond * seconds +
+            microsecondsPerMillisecond * milliseconds +
+            microseconds).round());
+
   // Fast path internal direct constructor to avoids the optional arguments and
   // [_microseconds] recomputation.
   const Duration._microseconds(this._duration);
@@ -211,6 +235,40 @@ class Duration implements Comparable<Duration> {
    * Returns number of whole microseconds spanned by this Duration.
    */
   int get inMicroseconds => _duration;
+
+  /**
+   * Returns the number of total days spanned by this Duration.
+   */
+  double get inTotalDays => _duration / Duration.microsecondsPerDay;
+
+  /**
+   * Returns the number of total hours spanned by this Duration.
+   *
+   * The returned value can be greater than 23.
+   */
+  double get inTotalHours => _duration / Duration.microsecondsPerHour;
+
+  /**
+   * Returns the number of total minutes spanned by this Duration.
+   *
+   * The returned value can be greater than 59.
+   */
+  double get inTotalMinutes => _duration / Duration.microsecondsPerMinute;
+
+  /**
+   * Returns the number of total seconds spanned by this Duration.
+   *
+   * The returned value can be greater than 59.99.
+   */
+  double get inTotalSeconds => _duration / Duration.microsecondsPerSecond;
+
+  /**
+   * Returns number of total milliseconds spanned by this Duration.
+   *
+   * The returned value can be greater than 999.
+   */
+  double get inTotalMilliseconds => _duration / Duration.microsecondsPerMillisecond;
+
 
   /**
    * Returns `true` if this [Duration] has the same value as [other].
