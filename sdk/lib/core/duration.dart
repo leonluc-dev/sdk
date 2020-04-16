@@ -324,6 +324,49 @@ class Duration implements Comparable<Duration> {
         sixDigits(inMicroseconds.remainder(microsecondsPerSecond));
     return "$inHours:$twoDigitMinutes:$twoDigitSeconds.$sixDigitUs";
   }
+  
+  static Duration parse(String formattedString) {
+    /*
+     * Regular expression matches following ISO 8601 duration values:
+     * Group 1: Negative sign
+     * Group 2: Years (Ignored due to having no determinate length)
+     * Group 3: Months (Ignored due to having no determinate length)
+     * Group 4: Days/Weeks
+     * Group 5: Day/Week indicator (D/W)
+     * Group 6: Hours
+     * Group 7: Minutes
+     * Group 8: Seconds
+     */
+    final RegExp re = new RegExp(r'^(-?)P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)([DW]))?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$');
+
+    Match match = re.firstMatch(formattedString);
+    if(match == null) {
+      throw new FormatException("Invalid duration format", formattedString);
+    }
+
+    double parseDoubleOrZero(String matched) {
+      if (matched == null) return 0;
+      return double.parse(matched);
+    }
+
+    //Positive/Negative
+    int multiplier = match[1] == '-' ? -1 : 1;
+
+    //Duration values
+    double days = parseDoubleOrZero(match[4]);
+    double hours = parseDoubleOrZero(match[6]);
+    double minutes = parseDoubleOrZero(match[7]);
+    double seconds = parseDoubleOrZero(match[8]);
+
+
+    //Week or days
+    if(match[5] != null) {
+      if(match[5] == 'W')
+        days = days * 7;
+    }
+
+    return Duration.fromDouble(days: days, hours: hours, minutes: minutes, seconds: seconds) * multiplier;
+  }
 
   /**
    * Returns whether this `Duration` is negative.
